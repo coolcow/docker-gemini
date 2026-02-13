@@ -1,0 +1,21 @@
+services:
+  ttyd:
+    container_name: gemini-ttyd
+    image: ghcr.io/coolcow/gemini
+    build: ./build # only needed if cloned from repo and if you want to build the image yourself
+    command: ttyd  # starting as a ttyd service that runs gemini-cli.
+    environment:
+      - TZ=UTC          # timezone for proper timestamps (in logs f.e.)
+      - GEMINI_UID=1000 # userid for ownership of the files in workspace
+      - GEMINI_GID=1000 # groupid for ownership of the files in workspace
+      - GEMINI_API_KEY= # your gemini API key (https://aistudio.google.com/app/api-keys)
+      - NODE_OPTIONS=--no-deprecation # suppress Warnings
+    volumes:
+      - ./workspace:/workspace # the workspace directory in which gemini is started
+      - home:/home/gemini      # for persistent versions, settings, credentials
+    ports:
+      - 7681:7681 # the port where ttyd is running on
+    restart: unless-stopped
+
+volumes:
+  home:
