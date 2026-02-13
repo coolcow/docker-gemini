@@ -1,4 +1,3 @@
- cat README.md
 # Docker Gemini CLI
 
 This repository provides a Docker image to run the [Google Gemini CLI](https://github.com/google/gemini-cli) in an isolated environment. It also includes the functionality to expose the CLI to the web using `ttyd`.
@@ -70,17 +69,39 @@ To use it, run:
 docker-compose up -d
 ```
 
-## Alias for easy access
+## Function for easy access
 
-To make using the Gemini CLI feel like a native command, you can define an alias in your shell's configuration file (e.g., `.bashrc`, `.zshrc`). This allows you to simply type `gemini` in your terminal to run the CLI within the Docker environment, with your current directory automatically mounted.
+To make using the Gemini CLI feel like a native command, it's recommended to define a shell function in your configuration file (e.g., `.bashrc`, `.zshrc`). A function is more robust than an alias and allows for conditional logic, like allocating a TTY only for interactive sessions. This makes the command safe for use in scripts and CI/CD pipelines.
 
-Add the following line to your shell's configuration file:
+This allows you to simply type `gemini` in your terminal to run the CLI within the Docker environment, with your current directory automatically mounted.
+
+Add the following function to your shell's configuration file:
 
 ```bash
-alias gemini="docker volume create gemini-home &> /dev/null && docker run -it --rm -v \"$(pwd)\":\"$(pwd)\" -w \"$(pwd)\" -v gemini-home:/home/gemini -e GEMINI_UID=$(id -u) -e GEMINI_GID=$(id -g) -e NODE_OPTIONS=--no-deprecation -e GEMINI_API_KEY=\"YOUR_API_KEY\" ghcr.io/coolcow/gemini:latest cli"
+gemini() {
+    # Ensure the persistent volume exists
+    docker volume create gemini-home &> /dev/null
+
+    # Set TTY arguments only if stdin is a terminal
+    local tty_args=""
+    if [ -t 0 ]; then
+        tty_args="--tty"
+    fi
+
+    # Run the docker container, passing all arguments to the CLI
+    docker run -i ${tty_args} --rm \
+        -v "$(pwd)":"$(pwd)" \
+        -w "$(pwd)" \
+        -v gemini-home:/home/gemini \
+        -e GEMINI_UID=$(id -u) \
+        -e GEMINI_GID=$(id -g) \
+        -e NODE_OPTIONS=--no-deprecation \
+        -e GEMINI_API_KEY="YOUR_API_KEY" \
+        ghcr.io/coolcow/gemini:latest cli "$@"
+}
 ```
 
-After adding the alias, restart your shell or source the configuration file (e.g., `source ~/.bashrc`) for the changes to take effect. Remember to replace `"YOUR_API_KEY"` with your actual Gemini API key.
+After adding the function, restart your shell or source the configuration file (e.g., `source ~/.bashrc`) for the changes to take effect. Remember to replace `"YOUR_API_KEY"` with your actual Gemini API key.
 
 ## Configuration
 
@@ -88,9 +109,9 @@ After adding the alias, restart your shell or source the configuration file (e.g
 -   **`NODE_OPTIONS=--no-deprecation`**: This optional variable is used to suppress Node.js deprecation warnings that may appear during startup. These warnings are generally harmless and can be ignored.
 -   **Volumes**:
     -   `"$(pwd)":"$(pwd)"`: The current directory is mounted as the workspace. While the default working directory inside the container is `/workspace`, the provided `docker run` commands override this using the `-w "$(pwd)"` option. This ensures the Gemini CLI operates directly within your host project. If you wish to use a different working directory inside the container, you should adjust both the volume mount (`-v`) and the working directory (`-w`) accordingly.
-    - `gemini-home:/home/gemini` (Optional): This named volume is used to persist the user's home directory. This is recommended for regular use to avoid reinstalling `npx` packages on every run and to save your Gemini CLI settings and history. For one-time use, you can omit this volume.
--   **Port**: `7681` is the default port for `ttyd`.
+    - `gemini-home:/home/gemini` (Optional): This named volume is used to persist the user's home directory. This is recommended for regular use to avoid reinstalling `npx` packages on every run and to save your Gemini CLI settings and history. For one-time use, you can omit this volume.-   **Port**: `7681` is the default port for `ttyd`.
 
 ## Acknowledgments
 
-This project was supported by the use of gemini-cli. All changes have been reviewed by me (a human) to ensure they are correct and make sense.
+* Heavily inspired by: https://github.com/tgagor/docker-gemini-cli.
+* This project was created with the help of the Gemini CLI, and all changes have been reviewed by me (a human) to ensure they are correct and make sense.
