@@ -8,7 +8,10 @@ GEMINI_HOME="/home/$USER"
 # Ensure the Gemini group exists, create if not.
 getent group ${GEMINI_GID} >/dev/null || groupadd -g ${GEMINI_GID} $GROUP
 # Ensure the Gemini user exists, create if not.
-getent passwd ${GEMINI_UID} >/dev/null || useradd -m -u "${GEMINI_UID}" -g "${GEMINI_GID}" -s /bin/bash "$USER"
+getent passwd ${GEMINI_UID} >/dev/null || {
+    [ -d "${GEMINI_HOME}" ] || (mkdir -p "${GEMINI_HOME}" && chown "${GEMINI_UID}:${GEMINI_GID}" "${GEMINI_HOME}")
+    useradd -u "${GEMINI_UID}" -g "${GEMINI_GID}" -s /bin/bash "$USER"
+}
 # Change ownership of HOME directory only if it is empty.
 [ -n "$(ls -A "${GEMINI_HOME}")" ] || chown "${GEMINI_UID}:${GEMINI_GID}" "${GEMINI_HOME}"
 
