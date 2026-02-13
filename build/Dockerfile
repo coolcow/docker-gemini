@@ -1,7 +1,7 @@
 ARG NODE_VERSION=lts-alpine3.22
 FROM node:${NODE_VERSION}
 
-RUN apk add --no-cache shadow bash curl gosu
+RUN apk add --no-cache bash curl git gosu shadow
 
 ARG TTYD_VERSION=1.7.7
 ARG TARGETARCH
