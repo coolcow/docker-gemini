@@ -20,7 +20,7 @@ GEMINI_CMD="npx -y @google/gemini-cli"
 case "$1" in
     cli)
         shift
-        exec gosu "${GEMINI_UID}:${GEMINI_GID}" bash -c "export HOME=$HOME; $GEMINI_CMD $@"
+        exec gosu "${GEMINI_UID}:${GEMINI_GID}" bash -c 'export HOME="'$HOME'"; '"$GEMINI_CMD"' "$@"' _ "$@"
         ;;
     ttyd)
         exec ttyd -w "$WORKSPACE" -u ${GEMINI_UID} -g ${GEMINI_GID} -p $PORT --writable $GEMINI_CMD
