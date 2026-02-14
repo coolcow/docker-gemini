@@ -1,10 +1,6 @@
 ARG NODE_VERSION=22
 FROM node:${NODE_VERSION}
 
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
-
 ARG TTYD_VERSION=1.7.7
 ARG TARGETARCH
 RUN case ${TARGETARCH} in \
@@ -29,3 +25,7 @@ ENV PORT=7681
 EXPOSE $PORT
 
 WORKDIR /workspace
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
