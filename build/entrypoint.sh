@@ -64,7 +64,7 @@ case "$1" in
         ;;
     ttyd)
         shift
-        exec ttyd -u "${GEMINI_UID}" -g "${GEMINI_GID}" -p "${PORT:-7681}" --writable "${GEMINI_CMD}" "$@"
+        exec ttyd -w "$(pwd)" -u "${GEMINI_UID}" -g "${GEMINI_GID}" -p "${PORT:-7681}" --writable ${GEMINI_CMD} $@
         ;;
     *)
         echo "Allowed start options: cli, ttyd" >&2
