@@ -20,7 +20,6 @@ remap_if_conflict() {
     if [[ -n "${existing_name}" && "${existing_name}" != "${name}" ]]; then
         local new_id
         new_id=$(awk -F: 'BEGIN{ max=1000 } $3>=max{ max=$3 } END{ print max+1 }' "${file_path}")
-        echo "Warning: ${type^^} ID ${id} is used by '${existing_name}'. Remapping '${existing_name}' to a new ID: ${new_id}."
         if [[ "$type" == "user" ]]; then
             usermod -u "${new_id}" "${existing_name}"
         else
