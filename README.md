@@ -56,7 +56,6 @@ docker run -it --rm \
   -e GEMINI_GID=$(id -g) \
   -e NODE_OPTIONS=--no-deprecation \
   -e GEMINI_API_KEY="YOUR_API_KEY" \
-  -e WORKSPACE="$(pwd)" \
   ghcr.io/coolcow/gemini:latest ttyd
 ```
 
@@ -108,7 +107,7 @@ After adding the function, restart your shell or source the configuration file (
 -   **`GEMINI_API_KEY`**: Your Google Gemini API key.
 -   **`NODE_OPTIONS=--no-deprecation`**: This optional variable is used to suppress Node.js deprecation warnings that may appear during startup. These warnings are generally harmless and can be ignored.
 -   **Volumes**:
-    -   `"$(pwd)":"$(pwd)"`: The current directory is mounted as the workspace. While the default working directory inside the container is `/workspace`, the provided `docker run` commands override this using the `-w "$(pwd)"` option. This ensures the Gemini CLI operates directly within your host project. If you wish to use a different working directory inside the container, you should adjust both the volume mount (`-v`) and the working directory (`-w`) accordingly.
+    -   `"$(pwd)":"$(pwd)"`: The current directory is mounted as the wirkdir. While the default working directory inside the container is `/workspace`, the provided `docker run` commands override this using the `-w "$(pwd)"` option. This ensures the Gemini CLI operates directly within your host project. If you wish to use a different working directory inside the container, you should adjust both the volume mount (`-v`) and the working directory (`-w`) accordingly.
     - `gemini-home:/home/gemini` (Optional): This named volume is used to persist the user's home directory. This is recommended for regular use to avoid reinstalling `npx` packages on every run and to save your Gemini CLI settings and history. For one-time use, you can omit this volume.-   **Port**: `7681` is the default port for `ttyd`.
 
 ## Acknowledgments

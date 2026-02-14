@@ -6,12 +6,12 @@ services:
     command: ttyd  # starting as a ttyd service that runs gemini-cli.
     environment:
       - TZ=UTC          # timezone for proper timestamps (in logs f.e.)
-      - GEMINI_UID=1000 # userid for ownership of the files in workspace
-      - GEMINI_GID=1000 # groupid for ownership of the files in workspace
+      - GEMINI_UID=1000 # userid for ownership of the files in workdir
+      - GEMINI_GID=1000 # groupid for ownership of the files in workdir
       - GEMINI_API_KEY= # your gemini API key (https://aistudio.google.com/app/api-keys)
       - NODE_OPTIONS=--no-deprecation # suppress Warnings
     volumes:
-      - ./workspace:/workspace # the workspace directory in which gemini is started
+      - ./workspace:/workspace # the workdir directory in which gemini is started
       - home:/home/gemini      # for persistent versions, settings, credentials
     ports:
       - 7681:7681 # the port where ttyd is running on

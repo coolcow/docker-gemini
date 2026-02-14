@@ -1,7 +1,9 @@
-ARG NODE_VERSION=lts-alpine3.22
+ARG NODE_VERSION=22
 FROM node:${NODE_VERSION}
 
-RUN apk add --no-cache bash curl git gosu shadow
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
 
 ARG TTYD_VERSION=1.7.7
 ARG TARGETARCH
@@ -13,18 +15,17 @@ RUN case ${TARGETARCH} in \
     curl -sSL "https://github.com/tsl0922/ttyd/releases/download/${TTYD_VERSION}/ttyd.${TTYD_ARCH}" -o /usr/local/bin/ttyd && \
     chmod +x /usr/local/bin/ttyd
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    gosu \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV GEMINI_API_KEY=
 ENV USER=gemini
 ENV GROUP=gemini
 ENV HOME=/home/$USER
-ENV WORKSPACE=/workspace
 ENV PORT=7681
-ENV GEMINI_API_KEY=
-
-WORKDIR $WORKSPACE
-
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
 
 EXPOSE $PORT
 
-ENTRYPOINT ["/entrypoint.sh"]
+WORKDIR /workspace
