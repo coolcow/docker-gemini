@@ -1,4 +1,8 @@
+ARG ENTRYPOINTS_VERSION=2.1.0
 ARG NODE_VERSION=22
+
+FROM ghcr.io/coolcow/entrypoints:${ENTRYPOINTS_VERSION} AS entrypoints
+
 FROM node:${NODE_VERSION}
 
 ARG TTYD_VERSION=1.7.7
@@ -16,13 +20,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gosu \
     && rm -rf /var/lib/apt/lists/*
 
-ENV GEMINI_API_KEY=
-ENV USER=gemini
-ENV GROUP=gemini
-ENV HOME=/home/$USER
-ENV PORT=7681
+COPY --from=entrypoints /assets/ensure_user_group_home.sh /usr/local/bin/ensure_user_group_home.sh
+RUN chmod +x /usr/local/bin/ensure_user_group_home.sh
 
-EXPOSE $PORT
+ENV GEMINI_API_KEY=
+ENV GEMINI_USER=gemini
+ENV GEMINI_GROUP=gemini
+ENV GEMINI_HOME=/home/gemini
+ENV GEMINI_SHELL=/bin/bash
+ENV TTYD_PORT=7681
+
+EXPOSE $TTYD_PORT
 
 WORKDIR /workspace
 

@@ -1,0 +1,21 @@
+# This Dockerfile is for running smoke tests on the gemini application image.
+
+# The application image to test is passed as a build argument.
+# The default value is for local testing.
+ARG APP_IMAGE=ghcr.io/coolcow/gemini:local-test-build
+FROM ${APP_IMAGE}
+
+# Run smoke tests directly inside the application image.
+# If any command fails, the build will fail, indicating a problem.
+RUN \
+    test -x /usr/local/bin/ttyd && \
+    test -x "$(command -v gosu)" && \
+    test -x /usr/local/bin/ensure_user_group_home.sh && \
+    test -x /entrypoint.sh && \
+    echo "Checking runtime tools..." && \
+    node --version && \
+    npx --version && \
+    ttyd --version && \
+    echo "Validating entrypoint script..." && \
+    bash -n /entrypoint.sh && \
+    grep -q 'Allowed start options: cli, ttyd' /entrypoint.sh
