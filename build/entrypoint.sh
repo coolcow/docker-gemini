@@ -18,7 +18,7 @@ case "$1" in
         ;;
     ttyd)
         shift
-        exec ttyd -w "$(pwd)" -u "${TARGET_UID}" -g "${TARGET_GID}" -p "${TTYD_PORT:-7681}" --writable ${TARGET_CMD} "$@"
+        exec env HOME="${TARGET_HOME}" ttyd -w "$(pwd)" -u "${TARGET_UID}" -g "${TARGET_GID}" -p "${TTYD_PORT:-7681}" --writable ${TARGET_CMD} "$@"
         ;;
     *)
         echo "Allowed start options: cli, ttyd" >&2

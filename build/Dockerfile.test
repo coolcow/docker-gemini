@@ -11,11 +11,11 @@ RUN \
     test -x /usr/local/bin/ttyd && \
     test -x "$(command -v gosu)" && \
     test -x /usr/local/bin/ensure_user_group_home.sh && \
-    test -x /entrypoint.sh && \
+    test -x /usr/local/bin/entrypoint.sh && \
     echo "Checking runtime tools..." && \
     node --version && \
     npx --version && \
     ttyd --version && \
     echo "Validating entrypoint script..." && \
-    bash -n /entrypoint.sh && \
-    grep -q 'Allowed start options: cli, ttyd' /entrypoint.sh
+    bash -n /usr/local/bin/entrypoint.sh && \
+    grep -q 'Allowed start options: cli, ttyd' /usr/local/bin/entrypoint.sh
