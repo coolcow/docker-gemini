@@ -11,17 +11,13 @@ export TARGET_SHELL=${GEMINI_SHELL:-/bin/bash}
 /usr/local/bin/ensure_user_group_home.sh
 
 TARGET_CMD="npx -y @google/gemini-cli"
-case "$1" in
-    cli)
-        shift
-        exec gosu "${TARGET_UID}:${TARGET_GID}" bash -c ''"${TARGET_CMD}"' "$@"' _ "$@"
-        ;;
+RUN_MODE="${RUN_MODE:-}"
+
+case "${RUN_MODE}" in
     ttyd)
-        shift
         exec env HOME="${TARGET_HOME}" ttyd -w "$(pwd)" -u "${TARGET_UID}" -g "${TARGET_GID}" -p "${TTYD_PORT:-7681}" --writable ${TARGET_CMD} "$@"
         ;;
     *)
-        echo "Allowed start options: cli, ttyd" >&2
-        exit 1
+        exec gosu "${TARGET_UID}:${TARGET_GID}" bash -c ''"${TARGET_CMD}"' "$@"' _ "$@"
         ;;
 esac

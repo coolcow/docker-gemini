@@ -1,71 +1,10 @@
 # Docker Gemini CLI
 
-This repository provides a Docker image to run the [Google Gemini CLI](https://github.com/google/gemini-cli) in an isolated environment.
+A Docker image for running the [Google Gemini CLI](https://github.com/google/gemini-cli) in an isolated and reproducible environment, with native-like terminal usage as default and an optional browser mode via `ttyd` (for example at `http://localhost:7681`).
 
-It supports two modes:
-- `cli`: Use Gemini directly in your terminal.
-- `ttyd`: Expose Gemini in a browser on `http://localhost:7681`.
+## Set Up Native-like Usage (Recommended)
 
-## Quick Start (CLI)
-
-### 1) Build the image (optional)
-
-If you want to build locally instead of pulling from GHCR:
-
-```bash
-docker build -t ghcr.io/coolcow/gemini:latest ./build
-```
-
-### 2) Create a persistent home volume
-
-This stores Gemini settings and npm/npx cache between runs:
-
-```bash
-docker volume create gemini-home
-```
-
-### 3) Run Gemini in your current project
-
-```bash
-docker run -it --rm \
-  -v "$(pwd)":"$(pwd)" \
-  -w "$(pwd)" \
-  -v gemini-home:/home/gemini \
-  -e GEMINI_UID=$(id -u) \
-  -e GEMINI_GID=$(id -g) \
-  -e GEMINI_API_KEY="$GEMINI_API_KEY" \
-  -e NODE_OPTIONS=--no-deprecation \
-  ghcr.io/coolcow/gemini:latest cli
-```
-
-## Web Terminal (`ttyd`)
-
-```bash
-docker run -it --rm \
-  -p 7681:7681 \
-  -v "$(pwd)":"$(pwd)" \
-  -w "$(pwd)" \
-  -v gemini-home:/home/gemini \
-  -e GEMINI_UID=$(id -u) \
-  -e GEMINI_GID=$(id -g) \
-  -e GEMINI_API_KEY="$GEMINI_API_KEY" \
-  -e NODE_OPTIONS=--no-deprecation \
-  ghcr.io/coolcow/gemini:latest ttyd
-```
-
-Then open `http://localhost:7681`.
-
-## Using Docker Compose
-
-The provided `compose.yml` starts `ttyd`.
-
-```bash
-docker compose up -d
-```
-
-## Optional: Shell Function for Native-like Usage
-
-Add this to your shell config (`~/.bashrc` or `~/.zshrc`) so you can run `gemini` like a local command:
+Add this function to your shell config (`~/.bashrc` or `~/.zshrc`) so you can use `gemini` like a local command:
 
 ```bash
 gemini() {
@@ -84,33 +23,118 @@ gemini() {
         -e GEMINI_GID=$(id -g) \
         -e GEMINI_API_KEY="YOUR_API_KEY" \
         -e NODE_OPTIONS=--no-deprecation \
-        ghcr.io/coolcow/gemini:latest cli "$@"
+        ghcr.io/coolcow/gemini:latest "$@"
 }
 ```
 
-Reload your shell afterward, for example:
+Reload your shell:
 
 ```bash
 source ~/.bashrc
 ```
 
-## Configuration
+### Quick Usage Examples
 
-- `GEMINI_API_KEY`: Your Google Gemini API key.
-- `GEMINI_UID` / `GEMINI_GID`: UID/GID used inside the container (defaults to `1000`/`1000`).
-- `NODE_OPTIONS=--no-deprecation`: Optional, suppresses harmless Node.js deprecation warnings.
-- `TTYD_PORT`: Port for web terminal mode (default `7681`).
+```bash
+gemini
+gemini --help
+gemini -p "summarize this repository"
+```
 
-For normal usage, you only need `GEMINI_API_KEY` (and optionally UID/GID).
+## Use as a `ttyd` Service with Docker Compose
 
-## Local Testing
+The included `compose.yml` starts the `ttyd` service.
 
-Run the built-in smoke tests locally.
+```bash
+docker compose up -d
+```
 
-1. `docker build -t ghcr.io/coolcow/gemini:local-test-build -f build/Dockerfile build`
-2. `docker build --build-arg APP_IMAGE=ghcr.io/coolcow/gemini:local-test-build -f build/Dockerfile.test build`
+Then open in your browser: `http://localhost:7681`
+
+Key parts of `compose.yml`:
+- `RUN_MODE=ttyd` starts web terminal mode.
+- `volumes`:
+  - `./workspace:/workspace` is your working directory.
+  - `home:/home/gemini` persists settings and caches.
+- `environment` includes `GEMINI_API_KEY`, `GEMINI_UID`, `GEMINI_GID`, `NODE_OPTIONS`, etc.
+- `ports: 7681:7681` publishes web access.
+
+## Usage with Plain Docker Commands
+
+### 1) Optional: Build Locally
+
+```bash
+docker build -t ghcr.io/coolcow/gemini:local-build ./build
+```
+
+### 2) Create a Persistent Home Volume
+
+```bash
+docker volume create gemini-home
+```
+
+### 3) Start in `cli` Mode
+
+```bash
+docker run -it --rm \
+  -v "$(pwd)":"$(pwd)" \
+  -w "$(pwd)" \
+  -v gemini-home:/home/gemini \
+  -e GEMINI_UID=$(id -u) \
+  -e GEMINI_GID=$(id -g) \
+  -e GEMINI_API_KEY="$GEMINI_API_KEY" \
+  -e NODE_OPTIONS=--no-deprecation \
+  ghcr.io/coolcow/gemini:local-build
+```
+
+### 4) Start in `ttyd` Mode via `docker run`
+
+```bash
+docker run -it --rm \
+  -p 7681:7681 \
+  -v "$(pwd)":"$(pwd)" \
+  -w "$(pwd)" \
+  -v gemini-home:/home/gemini \
+  -e RUN_MODE=ttyd \
+  -e GEMINI_UID=$(id -u) \
+  -e GEMINI_GID=$(id -g) \
+  -e GEMINI_API_KEY="$GEMINI_API_KEY" \
+  -e NODE_OPTIONS=--no-deprecation \
+  ghcr.io/coolcow/gemini:local-build
+```
+
+Then open in your browser: `http://localhost:7681`
+
+### Explanation of Parameters, Variables, and Volumes
+
+- `-v "$(pwd)":"$(pwd)"`: bind-mounts the current project so Gemini can work directly on your files.
+- `-w "$(pwd)"`: sets the container working directory to your current project.
+- `-v gemini-home:/home/gemini`: persistent home directory (config, caches, and potentially credentials).
+- `-e GEMINI_API_KEY=...`: Gemini API key (required).
+- `-e GEMINI_UID` / `-e GEMINI_GID`: ensures proper file ownership when writing to mounted project files.
+- `-e RUN_MODE=ttyd`: optional, starts browser-based `ttyd` mode (default without `RUN_MODE` is CLI).
+- `-e NODE_OPTIONS=--no-deprecation`: optional, suppresses non-critical Node warnings.
+- `-p 7681:7681`: for `ttyd` only, maps the web port to the host.
+
+## Local Image Smoke Test (for Developers)
+
+The smoke tests verify, among other things, required binaries (`ttyd`, `gosu`), entrypoint syntax, and expected startup options.
+
+1. Build the app image locally:
+
+   ```bash
+   docker build -t ghcr.io/coolcow/gemini:local-test-build -f build/Dockerfile build
+   ```
+
+2. Run smoke tests via the test Dockerfile:
+
+   ```bash
+   docker build --build-arg APP_IMAGE=ghcr.io/coolcow/gemini:local-test-build -f build/Dockerfile.test build
+   ```
+
+If the second build completes successfully, the smoke test passes.
 
 ## Acknowledgments
 
-- Heavily inspired by: https://github.com/tgagor/docker-gemini-cli.
+- Heavily inspired by: https://github.com/tgagor/docker-gemini-cli
 - This project was created with the help of Gemini CLI and reviewed by a human.

@@ -17,5 +17,4 @@ RUN \
     npx --version && \
     ttyd --version && \
     echo "Validating entrypoint script..." && \
-    bash -n /usr/local/bin/entrypoint.sh && \
-    grep -q 'Allowed start options: cli, ttyd' /usr/local/bin/entrypoint.sh
+    bash -n /usr/local/bin/entrypoint.sh
