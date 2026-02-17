@@ -1,19 +1,12 @@
 #!/usr/bin/env bash
 set -e
 
-TARGET_UID=${GEMINI_UID:-1000}
-TARGET_GID=${GEMINI_GID:-1000}
-TARGET_USER=${GEMINI_USER:-gemini}
-TARGET_GROUP=${GEMINI_GROUP:-gemini}
-TARGET_HOME=${GEMINI_HOME:-/home/${TARGET_USER}}
-TARGET_SHELL=${GEMINI_SHELL:-/bin/bash}
-
-export TARGET_UID
-export TARGET_GID
-export TARGET_USER
-export TARGET_GROUP
-export TARGET_HOME
-export TARGET_SHELL
+export TARGET_UID=${GEMINI_UID:-1000}
+export TARGET_GID=${GEMINI_GID:-1000}
+export TARGET_USER=${GEMINI_USER:-gemini}
+export TARGET_GROUP=${GEMINI_GROUP:-gemini}
+export TARGET_HOME=${GEMINI_HOME:-/home/${TARGET_USER}}
+export TARGET_SHELL=${GEMINI_SHELL:-/bin/bash}
 
 /usr/local/bin/ensure_user_group_home.sh
 
