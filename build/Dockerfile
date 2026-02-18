@@ -7,6 +7,8 @@ FROM ghcr.io/coolcow/entrypoints:${ENTRYPOINTS_VERSION} AS entrypoints
 
 FROM node:${NODE_VERSION}
 
+ARG TTYD_VERSION
+ARG DOCKER_CLI_VERSION
 ARG TARGETARCH
 RUN case ${TARGETARCH} in \
         "amd64") TTYD_ARCH="x86_64" ;; \
