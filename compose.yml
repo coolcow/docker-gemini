@@ -5,15 +5,16 @@ services:
     build: ./build # only needed if cloned from repo and if you want to build the image yourself
     working_dir: ${WORKDIR_APP:-/workspace}
     environment:
-      - TZ=UTC          # timezone for proper timestamps (in logs f.e.)
-      - RUN_MODE=ttyd   # start as ttyd service mode
-      - GEMINI_UID=1000 # userid for ownership of the files in workdir
-      - GEMINI_GID=1000 # groupid for ownership of the files in workdir
-      - GEMINI_API_KEY= # your gemini API key (https://aistudio.google.com/app/api-keys)
-      - NODE_OPTIONS=--no-deprecation # suppress Warnings
+      - TZ=UTC                         # timezone for proper timestamps (in logs f.e.)
+      - RUN_MODE=ttyd                  # start as ttyd service mode
+      - GEMINI_UID=1000                # userid for ownership of the files in workdir
+      - GEMINI_GID=1000                # groupid for ownership of the files in workdir
+      - GEMINI_API_KEY=$GEMINI_API_KEY # your gemini API key (https://aistudio.google.com/app/api-keys)
+      - NODE_OPTIONS=--no-deprecation  # suppress Warnings
     volumes:
-      - ./workspace:${WORKDIR_APP:-/workspace} # default workdir mapping, override via WORKDIR_APP
-      - home:/home/gemini      # for persistent versions, settings, credentials
+      - ./workspace:${WORKDIR_APP:-/workspace}    # default workdir mapping, override via WORKDIR_APP
+      - home:/home/gemini                         # for persistent versions, settings, credentials
+      - /var/run/docker.sock:/var/run/docker.sock # for docker commands inside
     ports:
       - 7681:7681 # the port where ttyd is running on
     restart: unless-stopped

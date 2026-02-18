@@ -10,6 +10,7 @@ FROM ${APP_IMAGE}
 RUN \
     test -x /usr/local/bin/ttyd && \
     test -x "$(command -v gosu)" && \
+    test -x "$(command -v docker)" && \
     test -x /usr/local/bin/ensure_user_group_home.sh && \
     test -x /usr/local/bin/entrypoint.sh && \
     echo "Checking runtime tools..." && \

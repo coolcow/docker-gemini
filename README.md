@@ -2,6 +2,16 @@
 
 A Docker image for running the [Google Gemini CLI](https://github.com/google/gemini-cli) in an isolated and reproducible environment, with native-like terminal usage as default and an optional browser mode via `ttyd` (for example at `http://localhost:7681`).
 
+## Versions Used
+
+Current image/runtime versions in this repository:
+
+- `ENTRYPOINTS_VERSION=2.1.0` (base helper image: `ghcr.io/coolcow/entrypoints`)
+- `NODE_VERSION=22` (base image: `node:22`)
+- `DOCKER_CLI_VERSION=27.5.1` (Docker CLI binary inside container)
+- `TTYD_VERSION=1.7.7` (`ttyd` web terminal binary)
+- Gemini CLI: started via `npx -y @google/gemini-cli` (latest available package at runtime, not pinned in this image)
+
 ## Set Up Native-like Usage (Recommended)
 
 Add this function to your shell config (`~/.bashrc` or `~/.zshrc`) so you can use `gemini` like a local command:
@@ -19,6 +29,7 @@ gemini() {
         -v "$(pwd)":"$(pwd)" \
         -w "$(pwd)" \
         -v gemini-home:/home/gemini \
+        -v /var/run/docker.sock:/var/run/docker.sock \
         -e GEMINI_UID=$(id -u) \
         -e GEMINI_GID=$(id -g) \
         -e GEMINI_API_KEY="YOUR_API_KEY" \
@@ -80,6 +91,7 @@ docker run -it --rm \
   -v "$(pwd)":"$(pwd)" \
   -w "$(pwd)" \
   -v gemini-home:/home/gemini \
+  -v /var/run/docker.sock:/var/run/docker.sock \
   -e GEMINI_UID=$(id -u) \
   -e GEMINI_GID=$(id -g) \
   -e GEMINI_API_KEY="$GEMINI_API_KEY" \
@@ -95,6 +107,7 @@ docker run -it --rm \
   -v "$(pwd)":"$(pwd)" \
   -w "$(pwd)" \
   -v gemini-home:/home/gemini \
+  -v /var/run/docker.sock:/var/run/docker.sock \
   -e RUN_MODE=ttyd \
   -e GEMINI_UID=$(id -u) \
   -e GEMINI_GID=$(id -g) \
@@ -110,11 +123,15 @@ Then open in your browser: `http://localhost:7681`
 - `-v "$(pwd)":"$(pwd)"`: bind-mounts the current project so Gemini can work directly on your files.
 - `-w "$(pwd)"`: sets the container working directory to your current project.
 - `-v gemini-home:/home/gemini`: persistent home directory (config, caches, and potentially credentials).
+- `-v /var/run/docker.sock:/var/run/docker.sock`: allows using Docker commands inside the container (talks to the host's Docker daemon). On startup, the runtime user is automatically added to the group that matches the socket GID.
 - `-e GEMINI_API_KEY=...`: Gemini API key (required).
 - `-e GEMINI_UID` / `-e GEMINI_GID`: ensures proper file ownership when writing to mounted project files.
 - `-e RUN_MODE=ttyd`: optional, starts browser-based `ttyd` mode (default without `RUN_MODE` is CLI).
 - `-e NODE_OPTIONS=--no-deprecation`: optional, suppresses non-critical Node warnings.
+- `-e DOCKER_SOCK_PATH` / `-e DOCKER_GROUP_NAME`: optional overrides for socket path and preferred docker group name.
 - `-p 7681:7681`: for `ttyd` only, maps the web port to the host.
+
+Note: The image includes a recent Docker CLI binary, so Docker API version negotiation works with modern host daemons when `/var/run/docker.sock` is mounted.
 
 ## Local Image Smoke Test (for Developers)
 
